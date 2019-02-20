@@ -262,6 +262,8 @@ public class MainActivity extends AppCompatActivity implements
                         os = new FileOutputStream(file);
                         os.write(data);
                         os.close();
+
+                        Log.d("MainActivity", "cqd, takePicture, path = " + file);
                     } catch (IOException e) {
                         Log.w(TAG, "Cannot write to " + file, e);
                     } finally {

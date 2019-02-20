@@ -19,8 +19,10 @@ package com.google.android.cameraview;
 import android.annotation.SuppressLint;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.nfc.Tag;
 import android.os.Build;
 import android.support.v4.util.SparseArrayCompat;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
@@ -36,6 +38,7 @@ class Camera1 extends CameraViewImpl {
     private static final int INVALID_CAMERA_ID = -1;
 
     private static final SparseArrayCompat<String> FLASH_MODES = new SparseArrayCompat<>();
+    private static final String TAG = "Camera1";
 
     static {
         FLASH_MODES.put(Constants.FLASH_OFF, Camera.Parameters.FLASH_MODE_OFF);
@@ -228,6 +231,7 @@ class Camera1 extends CameraViewImpl {
             mCamera.autoFocus(new Camera.AutoFocusCallback() {
                 @Override
                 public void onAutoFocus(boolean success, Camera camera) {
+					Log.e(TAG, "takePictureInternal, getThreadID = " + Thread.currentThread());
                     takePictureInternal();
                 }
             });
@@ -238,6 +242,7 @@ class Camera1 extends CameraViewImpl {
 
     void takePictureInternal() {
         if (!isPictureCaptureInProgress.getAndSet(true)) {
+			Log.e(TAG, "cqd 1, before mCamera.takePicture");
             mCamera.takePicture(null, null, null, new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
@@ -257,12 +262,14 @@ class Camera1 extends CameraViewImpl {
         }
         mDisplayOrientation = displayOrientation;
         if (isCameraOpened()) {
+			Log.e(TAG, "cqd, setDisplayOrientation, mCameraParameters.setRotation　＝　" + calcCameraRotation(displayOrientation));
             mCameraParameters.setRotation(calcCameraRotation(displayOrientation));
             mCamera.setParameters(mCameraParameters);
             final boolean needsToStopPreview = mShowingPreview && Build.VERSION.SDK_INT < 14;
             if (needsToStopPreview) {
                 mCamera.stopPreview();
             }
+			Log.e(TAG, "cqd, setDisplayOrientation, mCameraParameters.setDisplayOrientation　＝　" + calcDisplayOrientation(displayOrientation));
             mCamera.setDisplayOrientation(calcDisplayOrientation(displayOrientation));
             if (needsToStopPreview) {
                 mCamera.startPreview();
@@ -288,6 +295,8 @@ class Camera1 extends CameraViewImpl {
         if (mCamera != null) {
             releaseCamera();
         }
+
+        Log.e(TAG, "cqd, openCamera, Camera.open, mCameraId = " + mCameraId);
         mCamera = Camera.open(mCameraId);
         mCameraParameters = mCamera.getParameters();
         // Supported preview sizes
@@ -305,6 +314,7 @@ class Camera1 extends CameraViewImpl {
             mAspectRatio = Constants.DEFAULT_ASPECT_RATIO;
         }
         adjustCameraParameters();
+        Log.e(TAG, "cqd, openCamera, mCamera.setDisplayOrientation　＝　" + calcDisplayOrientation(mDisplayOrientation));
         mCamera.setDisplayOrientation(calcDisplayOrientation(mDisplayOrientation));
         mCallback.onCameraOpened();
     }
@@ -337,6 +347,12 @@ class Camera1 extends CameraViewImpl {
         mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
         mCameraParameters.setPictureSize(pictureSize.getWidth(), pictureSize.getHeight());
         mCameraParameters.setRotation(calcCameraRotation(mDisplayOrientation));
+
+        Log.e(TAG, "cqd, adjustCameraParameters, mCameraParameters.setPreviewSize, w = " + size.getWidth() + ", h = " +  size.getHeight());
+        Log.e(TAG, "cqd, adjustCameraParameters, mCameraParameters.setPictureSize, w = " + pictureSize.getWidth() + ", h = " +  pictureSize.getHeight());
+        Log.e(TAG, "cqd, adjustCameraParameters, mCameraParameters.setRotation, w = " + calcCameraRotation(mDisplayOrientation));
+
+
         setAutoFocusInternal(mAutoFocus);
         setFlashInternal(mFlash);
         mCamera.setParameters(mCameraParameters);
@@ -439,12 +455,16 @@ class Camera1 extends CameraViewImpl {
             final List<String> modes = mCameraParameters.getSupportedFocusModes();
             if (autoFocus && modes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
                 mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                Log.e(TAG, "cqd, setAutoFocusInternal, mCameraParameters.setFocusMode, FOCUS_MODE_CONTINUOUS_PICTURE");
             } else if (modes.contains(Camera.Parameters.FOCUS_MODE_FIXED)) {
                 mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
+                Log.e(TAG, "cqd, setAutoFocusInternal, mCameraParameters.setFocusMode, FOCUS_MODE_FIXED");
             } else if (modes.contains(Camera.Parameters.FOCUS_MODE_INFINITY)) {
                 mCameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+                Log.e(TAG, "cqd, setAutoFocusInternal, mCameraParameters.setFocusMode, FOCUS_MODE_INFINITY");
             } else {
                 mCameraParameters.setFocusMode(modes.get(0));
+                Log.e(TAG, "cqd, setAutoFocusInternal, mCameraParameters.setFocusMode, ％d = " + modes.get(0));
             }
             return true;
         } else {
@@ -460,12 +480,14 @@ class Camera1 extends CameraViewImpl {
             List<String> modes = mCameraParameters.getSupportedFlashModes();
             String mode = FLASH_MODES.get(flash);
             if (modes != null && modes.contains(mode)) {
+                Log.e(TAG, "cqd, setFlashInternal, mCameraParameters.setFlashMode, mode = " + mode);
                 mCameraParameters.setFlashMode(mode);
                 mFlash = flash;
                 return true;
             }
             String currentMode = FLASH_MODES.get(mFlash);
             if (modes == null || !modes.contains(currentMode)) {
+                Log.e(TAG, "cqd, setFlashInternal, mCameraParameters.setFlashMode FLASH_MODE_OFF");
                 mCameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 mFlash = Constants.FLASH_OFF;
                 return true;
