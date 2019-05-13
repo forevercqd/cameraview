@@ -101,7 +101,7 @@ public class CameraView extends FrameLayout {
         final PreviewImpl preview = createPreviewImpl(context);
         mCallbacks = new CallbackBridge();
 
-        if (false) {
+        if (true) {
             if (Build.VERSION.SDK_INT < 21) {
                 mImpl = new Camera1(mCallbacks, preview);
             } else if (Build.VERSION.SDK_INT < 23) {

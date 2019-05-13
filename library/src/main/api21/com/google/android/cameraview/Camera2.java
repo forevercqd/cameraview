@@ -45,6 +45,7 @@ import java.util.SortedSet;
 class Camera2 extends CameraViewImpl {
 
     private static final String TAG = "Camera2";
+    private static final boolean mbSelectLargest = true;
 
     private static final SparseIntArray INTERNAL_FACINGS = new SparseIntArray();
 
@@ -56,12 +57,12 @@ class Camera2 extends CameraViewImpl {
     /**
      * Max preview width that is guaranteed by Camera2 API
      */
-    private static final int MAX_PREVIEW_WIDTH = 1920;
+    private static final int MAX_PREVIEW_WIDTH = 1920*10;
 
     /**
      * Max preview height that is guaranteed by Camera2 API
      */
-    private static final int MAX_PREVIEW_HEIGHT = 1080;
+    private static final int MAX_PREVIEW_HEIGHT = 1080*10;
 
     private final CameraManager mCameraManager;
 
@@ -475,6 +476,7 @@ class Camera2 extends CameraViewImpl {
             return;
         }
         Size previewSize = chooseOptimalSize();
+        Log.d(TAG, "cqd, startCaptureSession, PreView w = " + previewSize.getWidth() + ", h = " + previewSize.getHeight());
         mPreview.setBufferSize(previewSize.getWidth(), previewSize.getHeight());
         Surface surface = mPreview.getSurface();
         try {
@@ -506,9 +508,11 @@ class Camera2 extends CameraViewImpl {
         SortedSet<Size> candidates = mPreviewSizes.sizes(mAspectRatio);
 
         // Pick the smallest of those big enough
-        for (Size size : candidates) {
-            if (size.getWidth() >= surfaceLonger && size.getHeight() >= surfaceShorter) {
-                return size;
+        if (mbSelectLargest == false) {
+            for (Size size : candidates) {
+                if (size.getWidth() >= surfaceLonger && size.getHeight() >= surfaceShorter) {
+                    return size;
+                }
             }
         }
         // If no size is big enough, pick the largest one.
