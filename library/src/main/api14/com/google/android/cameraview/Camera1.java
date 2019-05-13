@@ -372,7 +372,7 @@ class Camera1 extends CameraViewImpl {
     @SuppressWarnings("SuspiciousNameCombination")
     private Size chooseOptimalSize(SortedSet<Size> sizes) {
         if (!mPreview.isReady()) { // Not yet laid out
-            return sizes.first(); // Return the smallest size
+            return sizes.last(); // Return the largest size
         }
         int desiredWidth;
         int desiredHeight;
