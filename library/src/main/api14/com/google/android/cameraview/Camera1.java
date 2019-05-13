@@ -103,6 +103,7 @@ class Camera1 extends CameraViewImpl {
     @Override
     void stop() {
         if (mCamera != null) {
+            Log.d(TAG, "cqd, stop, mCamera.stopPreview()");
             mCamera.stopPreview();
         }
         mShowingPreview = false;
@@ -116,6 +117,7 @@ class Camera1 extends CameraViewImpl {
             if (mPreview.getOutputClass() == SurfaceHolder.class) {
                 final boolean needsToStopPreview = mShowingPreview && Build.VERSION.SDK_INT < 14;
                 if (needsToStopPreview) {
+                    Log.d(TAG, "cqd, setUpPreview, mCamera.stopPreview()");
                     mCamera.stopPreview();
                 }
                 mCamera.setPreviewDisplay(mPreview.getSurfaceHolder());
@@ -269,6 +271,7 @@ class Camera1 extends CameraViewImpl {
             mCamera.setParameters(mCameraParameters);
             final boolean needsToStopPreview = mShowingPreview && Build.VERSION.SDK_INT < 14;
             if (needsToStopPreview) {
+                Log.d(TAG, "cqd, setDisplayOrientation, mCamera.stopPreview()");
                 mCamera.stopPreview();
             }
 			Log.d(TAG, "cqd, setDisplayOrientation, mCameraParameters.setDisplayOrientation　＝　" + calcDisplayOrientation(displayOrientation));
@@ -345,6 +348,7 @@ class Camera1 extends CameraViewImpl {
         // Largest picture size in this ratio
         final Size pictureSize = mPictureSizes.sizes(mAspectRatio).last();
         if (mShowingPreview) {
+            Log.d(TAG, "cqd, adjustCameraParameters, mCamera.stopPreview()");
             mCamera.stopPreview();
         }
         mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
